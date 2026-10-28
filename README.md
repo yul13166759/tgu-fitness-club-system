@@ -204,44 +204,77 @@ Access Control Module — обрабатывает запрос, проверя�
 Время ответа системы не более 2 секунд (НФТ-01)
 При ошибке или таймауте турникет переходит в режим ручной проверки
 
-3.2. ER-диаграмма
+### 3.2. ER-диаграмма
+
 Модель данных системы фитнес-клуба «Сила». Зелёным выделены новые сущности (Card, Waitlist, PersonalTraining), жёлтым — изменённые (Membership, Trainer), голубым — существующие без изменений.
-Рисунок 3 — ER-диаграмма системы фитнес-клуба «Сила» (доработка)
-Сущности системы:
-Client (Клиент) — id, name, phone, email
-Card (Карточка) — id, client_id (FK), card_number (unique), status, issued_at
-Membership (Абонемент) — id, client_id (FK), type, status, end_date, frozen_until, freeze_reason
-Class (Занятие) — id, title, type, trainer_id (FK), date_time, capacity, inventory_included
-Booking (Бронь) — id, client_id (FK), class_id (FK), status, created_at
-Waitlist (Лист ожидания) — id, class_id (FK), client_id (FK), position, created_at
-Trainer (Тренер) — id, name, specialization, rating
-PersonalTraining (Персональная тренировка) — id, trainer_id (FK), client_id (FK), date_time, status, price
-Связи: все связи типа 1:M, внешние ключи NOT NULL на стороне «многих». Для Card действует частичный уникальный индекс по client_id при status = 'active' (O-01).
-3.3. CRUD-матрица
+
+![ER-диаграмма](images/er_diagram.png)
+
+*Рисунок 3 — ER-диаграмма системы фитнес-клуба «Сила» (доработка)*
+
+**Сущности системы:**
+
+- **Client** (Клиент) — id, name, phone, email
+- **Card** (Карточка) — id, client_id (FK), card_number (unique), status, issued_at
+- **Membership** (Абонемент) — id, client_id (FK), type, status, end_date, frozen_until, freeze_reason
+- **Class** (Занятие) — id, title, type, trainer_id (FK), date_time, capacity, inventory_included
+- **Booking** (Бронь) — id, client_id (FK), class_id (FK), status, created_at
+- **Waitlist** (Лист ожидания) — id, class_id (FK), client_id (FK), position, created_at
+- **Trainer** (Тренер) — id, name, specialization, rating
+- **PersonalTraining** (Персональная тренировка) — id, trainer_id (FK), client_id (FK), date_time, status, price
+
+**Связи:** все связи типа 1:M, внешние ключи NOT NULL на стороне «многих». Для Card действует частичный уникальный индекс по client_id при status = 'active' (O-01).
+
+---
+
+### 3.3. CRUD-матрица
+
 Матрица операций над сущностями по сценариям использования.
-Рисунок 4 — CRUD-матрица операций
-Обозначения: C (Create) — создание; R (Read) — чтение; U (Update) — изменение; D (Delete) — удаление.
-Вывод: каждый сценарий выполняет осмысленные операции над данными; все пять сущностей задействованы минимум в одной операции, «мёртвых» сущностей в модели нет.
-3.4. Сценарии использования
-Рисунок 5 — Сценарии использования (вход в зал по карточке, запись в лист ожидания)
-4. Спецификация API
-4.1. Схема интеграций
+
+![CRUD-матрица](images/crud_matrix.png)
+
+*Рисунок 4 — CRUD-матрица операций*
+
+**Обозначения:** C (Create) — создание; R (Read) — чтение; U (Update) — изменение; D (Delete) — удаление.
+
+**Вывод:** каждый сценарий выполняет осмысленные операции над данными; все пять сущностей задействованы минимум в одной операции, «мёртвых» сущностей в модели нет.
+
+---
+
+### 3.4. Сценарии использования
+
+![Сценарии использования](images/use_cases.png)
+
+*Рисунок 5 — Сценарии использования (вход в зал по карточке, запись в лист ожидания)*
+
+---
+
+### 4. Спецификация API
+
+#### 4.1. Схема интеграций
+
 Схема интеграционных взаимодействий системы «Сила» с внешними сервисами.
-Рисунок 6 — Схема интеграций системы «Сила» с внешними сервисами
-Интеграция 1: Турникет (Система контроля доступа)
-Тип: синхронная интеграция
-Протокол: REST API (HTTPS)
-Формат: JSON
-Запрос: {"card_id": "12345", "timestamp": "2026-09-09T18:00:00"}
-Ответ: {"access_granted": true/false, "reason": "active/frozen/expired/blocked"}
-Обработка ошибок: при таймауте (>3 сек) — переход в режим ручной проверки
-Интеграция 2: Платёжный шлюз
-Тип: синхронная интеграция
-Протокол: REST API (HTTPS)
-Формат: JSON
-Запрос: {"payment_id": "...", "amount": 500, "currency": "RUB"}
-Ответ: {"status": "success/failed"}
-Обработка ошибок: при ошибке — откат операции, до 3 ретраев через 5 секунд
+
+![Схема интеграций](images/integration_diagram.png)
+
+*Рисунок 6 — Схема интеграций системы «Сила» с внешними сервисами*
+
+**Интеграция 1: Турникет (Система контроля доступа)**
+- **Тип:** синхронная интеграция
+- **Протокол:** REST API (HTTPS)
+- **Формат:** JSON
+- **Запрос:** `{"card_id": "12345", "timestamp": "2026-09-09T18:00:00"}`
+- **Ответ:** `{"access_granted": true/false, "reason": "active/frozen/expired/blocked"}`
+- **Обработка ошибок:** при таймауте (>3 сек) — переход в режим ручной проверки
+
+**Интеграция 2: Платёжный шлюз**
+- **Тип:** синхронная интеграция
+- **Протокол:** REST API (HTTPS)
+- **Формат:** JSON
+- **Запрос:** `{"payment_id": "...", "amount": 500, "currency": "RUB"}`
+- **Ответ:** `{"status": "success/failed"}`
+- **Обработка ошибок:** при ошибке — откат операции, до 3 ретраев через 5 секунд
+
 🎓 Ключевые результаты
 Сущности системы:
 Клиент (Client)
